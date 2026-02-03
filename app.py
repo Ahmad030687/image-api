@@ -7,35 +7,33 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "🖼️ AHMAD RDX IMAGE ENGINE - DYNAMIC MODE LIVE"
+    return "🖼️ AHMAD RDX IMAGE ENGINE - DYNAMIC MODE"
 
 @app.route('/find-img')
 def find_image():
     query = request.args.get('q')
-    count = request.args.get('count', default=1, type=int) # Default 1
+    # User jitni mangay ga (count), default 1 rakha hai
+    count = request.args.get('count', default=1, type=int)
     
     if not query:
-        return jsonify({"status": False, "msg": "Query missing!"})
+        return jsonify({"status": False, "msg": "Search query missing!"})
 
     try:
         with DDGS() as ddgs:
-            # Variety ke liye 50 results nikaalte hain
+            # 50 results nikaalte hain variety ke liye
             results = list(ddgs.images(query, region="wt-wt", safesearch="off", max_results=50))
             
             if results:
-                # Jitni user ne mangi hain (max 10)
-                limit = min(len(results), count, 10) 
+                # Limit 10 rakhi hai taake Messenger crash na ho
+                limit = min(len(results), count, 10)
+                # 🎲 50 mein se 'limit' jitni random unique images uthana
                 random_images = random.sample(results, limit)
                 
-                output = []
-                for img in random_images:
-                    output.append({
-                        "url": img.get('image')
-                    })
+                output = [{"url": img.get('image')} for img in random_images]
                 
                 return jsonify({
                     "status": True,
-                    "count": limit,
+                    "count": len(output),
                     "data": output
                 })
             else:
