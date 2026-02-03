@@ -1,35 +1,43 @@
 from flask import Flask, request, jsonify, Response
-from duckduckgo_search import DDGS # 🛡️ High-speed image scraper
+from duckduckgo_search import DDGS
 import random
 import os
 
 app = Flask(__name__)
 
-# ... aapka purana ahmad-dl wala code yahan rehne dein ...
+@app.route('/')
+def home():
+    return "🖼️ AHMAD RDX IMAGE API - LIVE"
 
 @app.route('/find-img')
 def find_image():
     query = request.args.get('q')
-    if not query: return jsonify({"status": False, "msg": "Search query missing"})
+    if not query: 
+        return jsonify({"status": False, "msg": "Ahmad bhai, query missing hai!"})
 
     try:
+        # DDGS (DuckDuckGo Search) engine use kar rahe hain
         with DDGS() as ddgs:
-            # 🔎 Query search karke images ki list nikaalna
-            results = ddgs.images(query, region="wt-wt", safesearch="off", max_results=50)
+            # 50 results mangwaye hain taake variety zyada ho
+            results = list(ddgs.images(query, region="wt-wt", safesearch="off", max_results=50))
             
             if results:
-                # 🎲 RANDOMIZER: 50 results mein se koi bhi 1 random uthana
-                random_choice = random.choice(results)
+                # 🎲 Har bar list mein se 1 random image select hogi
+                random_image = random.choice(results)
                 return jsonify({
                     "status": True,
-                    "query": query,
-                    "image_url": random_choice['image'],
-                    "source": random_choice['source']
+                    "title": random_image.get('title', 'Image Search Result'),
+                    "url": random_image.get('image'),
+                    "source": random_image.get('source')
                 })
             else:
-                return jsonify({"status": False, "msg": "No images found"})
+                return jsonify({"status": False, "msg": "Nahi mila kuch bhi!"})
                 
     except Exception as e:
         return jsonify({"status": False, "error": str(e)})
 
-# ... proxy-dl aur baqi code ...
+if __name__ == "__main__":
+    # Render ke liye port 10000 zaroori hai
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
+    
